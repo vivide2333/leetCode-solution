@@ -1,0 +1,109 @@
+<html>
+<head>
+    <style>
+        #editor {
+            border: 1px solid black;
+            width: 500px;
+            height: 300px;
+            padding: 10px;
+            overflow: auto;
+        }
+
+        #toolbar {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        #toolbar button {
+            margin-right: 10px;
+        }
+
+        #toolbar input {
+            width: 200px;
+        }
+    </style>
+</head>
+<body>
+    <div id="toolbar">
+        <button id="bold">Bold</button>
+        <button id="italic">Italic</button>
+        <button id="underline">Underline</button>
+        <button id="insert-image">Insert Image</button>
+        <input id="image-url" type="text" placeholder="Enter image URL here" />
+    </div>
+    <div id="editor" contenteditable="true"></div>
+    <script>
+        // Get the elements
+        const editor = document.getElementById("editor");
+        const bold = document.getElementById("bold");
+        const italic = document.getElementById("italic");
+        const underline = document.getElementById("underline");
+        const insertImage = document.getElementById("insert-image");
+        const imageUrl = document.getElementById("image-url");
+
+        // Add event listeners
+        bold.addEventListener("click", function() {
+            document.execCommand("bold", false, null);
+        });
+
+        italic.addEventListener("click", function() {
+            document.execCommand("italic", false, null);
+        });
+
+        underline.addEventListener("click", function() {
+            document.execCommand("underline", false, null);
+        });
+
+        insertImage.addEventListener("click", function() {
+            // Get the image URL
+            const url = imageUrl.value;
+            // Check if it is valid
+            if (url) {
+                // Create a new image element
+                const img = document.createElement("img");
+                // Set the src attribute to the URL
+                img.src = url;
+                // Set some style attributes
+                img.style.maxWidth = "100%";
+                img.style.height = "auto";
+                // Insert the image in the editor
+                document.execCommand("insertHTML", false, img.outerHTML);
+                // Clear the input field
+                imageUrl.value = "";
+            } else {
+                // Alert the user to enter a valid URL
+                alert("Please enter a valid image URL");
+            }
+        });
+
+        // Handle the delete key event
+        editor.addEventListener("keydown", function(event) {
+            // Check if the delete key is pressed
+            if (event.keyCode === 8) {
+                // Get the selection object
+                const selection = window.getSelection();
+                // Check if there is a selection
+                if (selection) {
+                    // Get the range object
+                    const range = selection.getRangeAt(0);
+                    // Check if the range is collapsed
+                    if (range.collapsed) {
+                        // Move the range start one character backward
+                        range.setStart(range.startContainer, range.startOffset - 1);
+                        // Get the range content
+                        const content = range.cloneContents();
+                        // Check if the content is an image
+                        if (content.querySelector("img")) {
+                            // Prevent the default behavior
+                            event.preventDefault();
+                            // Delete the image
+                            range.deleteContents();
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

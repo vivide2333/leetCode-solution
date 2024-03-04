@@ -1,0 +1,139 @@
+<html>
+<head>
+    <style>
+        #p {
+            border: 1px solid black;
+            width: 500px;
+            height: 100px;
+            padding: 10px;
+            overflow: auto;
+            white-space: break-spaces;
+        }
+    </style>
+</head>
+<body>
+    <p id="p" contenteditable="true" >This is a paragraph with some text. You can select a part of it and make it bold.</p>
+    <button id="bold">Make selection bold</button>
+    <button id="img">insert img</button>
+    <button id="sub">submit</button>
+    <script>
+        // Get the elements
+        const p = document.getElementById("p");
+        const bold = document.getElementById("bold");
+        const img = document.getElementById("img");
+        const sub =  document.getElementById("sub");
+        // Get the content editable element
+const editor = p;
+sub.addEventListener("click", function() {
+    console.log(editor.innerHTML.toString())
+   
+    sessionStorage.setItem('editor',  JSON.stringify(editor.innerHTML.toString()))
+})
+
+editor.addEventListener("keydown", function(event) {
+    console.log("keydown", event.keyCode)
+    // Check if the enter key is pressed
+    if (event.keyCode === 13) {
+        
+        // Prevent the default behavior
+        event.preventDefault();
+        // Insert the "\n" character at the caret position
+        pasteHtmlAtCaret("\n");
+        // Update the selection and caret position to be after the "\n" character
+        const selection = window.getSelection();
+        const range = selection.getRangeAt(0);
+        range.setStartAfter(range.startContainer);
+        range.collapse(true);
+        selection.removeAllRanges();
+        selection.addRange(range);
+    }
+});
+
+// The pasteHtmlAtCaret function is from this answer: [1](https://stackoverflow.com/questions/6249095/how-to-set-the-caret-cursor-position-in-a-contenteditable-element-div)
+function pasteHtmlAtCaret(html) {
+    var sel, range;
+    if (window.getSelection) {
+        // IE9 and non-IE
+        sel = window.getSelection();
+        if (sel.getRangeAt && sel.rangeCount) {
+            range = sel.getRangeAt(0);
+            range.deleteContents();
+
+            // Range.createContextualFragment() would be useful here but is
+            // only relatively recently standardized and is not supported in
+            // some browsers (IE9, for one)
+            var el = document.createElement("div");
+            el.innerHTML = html;
+            var frag = document.createDocumentFragment(), node, lastNode;
+            while ( (node = el.firstChild) ) {
+                lastNode = frag.appendChild(node);
+            }
+            range.insertNode(frag);
+
+            // Preserve the selection
+            if (lastNode) {
+                range = range.cloneRange();
+                range.setStartAfter(lastNode);
+                range.collapse(true);
+                sel.removeAllRanges();
+                sel.addRange(range);
+            }
+        }
+    } else if (document.selection && document.selection.type != "Control") {
+        // IE < 9
+        document.selection.createRange().pasteHTML(html);
+    }
+}
+
+        // Add event listener
+        bold.addEventListener("click", function() {
+            // Get the selection object
+            const selection = window.getSelection();
+            // Check if there is a selection
+            if (selection) {
+                // Get the range object
+                const range = selection.getRangeAt(0);
+                // Check if the range is not collapsed
+                if (!range.collapsed) {
+                    // Create a new span element
+                    const span = document.createElement("span");
+                    // Set the style attribute to bold
+                    span.style.fontWeight = "bold";
+                    // Wrap the range content with the span element
+                    range.surroundContents(span);
+                }
+            }
+        });
+        img.addEventListener("click", function() {
+            // Get the current selection and caret position
+            const selection = window.getSelection();
+            const range = selection.getRangeAt(0);
+            console.log('range', range)
+
+            // Delete any existing content in the range
+            range.deleteContents();
+
+            // Create a new image element with the desired src attribute
+            const a = document.createElement("a");
+            
+            a.innerText = 'vivi的a';
+            a.href="http://www.baidu.com"
+            // Create a document fragment and append the image element to it
+            const fragment = document.createDocumentFragment();
+            fragment.appendChild(a);
+
+            // Insert the document fragment into the range
+            range.insertNode(fragment);
+
+            // Update the selection and caret position to be after the image element
+            range.setStartAfter(a);
+            range.collapse(true);
+            selection.removeAllRanges();
+            selection.addRange(range);
+
+        })
+    </script>
+</body>
+</html>
+
+
